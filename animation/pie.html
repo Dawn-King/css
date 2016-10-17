@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>饼图</title>
+	<style>
+		.pie {
+			width: 100px; height: 100px;
+			border-radius: 50%;
+			background: yellowgreen;
+			background-image: linear-gradient(to right, transparent 50%, currentColor 0);
+			color: #655;
+			margin: 5px;
+		}
+
+		.pie::before {
+			content: '';
+			display: block;
+			margin-left: 50%;
+			height: 100%;
+			border-radius: 0 100% 100% 0 / 50%;
+			background-color: inherit;
+			transform-origin: left;
+			animation: spin 3s linear infinite, bg 6s step-end infinite;
+			animation-play-state: paused;
+		}
+
+		@keyframes spin {
+			to { transform: rotate(0.5turn); }
+		}
+		@keyframes bg {
+			50% { background: currentColor; };
+		}
+
+		.stop::before{
+			animation-play-state: paused!important;
+		}
+
+		.start::before{
+			animation-play-state: running!important;
+		}
+
+		.all{
+			background-color: #655;
+		}
+		.config{ line-height: 22px; font-size: 14px; }
+		label{ display: block; line-height: 22px; }
+	</style>
+</head>
+<body>
+	<div class="pie" id="pie"></div>
+	
+	<div class="config">
+		<label>
+			<span class="name">动画时间：</span>
+			<input type="text" id="time" placeholder="默认为6秒" value="6">
+		</label>
+		<label>
+			<span class="name">显示比例：</span>
+			<input type="text" id="num" placeholder="输入1-100">
+			
+		</label>
+		<input type="button" value="确定" id="btn">
+	</div>
+
+	<script>
+		var pie      = document.querySelector('#pie');
+		var numElem  = document.querySelector('#num');
+		var timeElem = document.querySelector('#time');
+		var btnElem  = document.querySelector('#btn');
+
+		btnElem.addEventListener("click", function() {
+			if(!isNaN(numElem.value) && numElem.value > 0){
+				var dom          = pie.parentNode.removeChild(pie);
+				var first        = document.body.firstChild;
+				var num          = numElem.value   >= 100 ? 100 : numElem.value;
+				var time         = timeElem.value >= 1 ? timeElem.value : 6; //默认动画用时为6秒
+				var getStyleElem = document.querySelector('#changeStyle');
+				var ms           = (num * time / 100) * 1000; 
+				var css          = '.pie::before{animation: spin ' + time / 2 + 's linear infinite, bg ' + time + 's step-end infinite;}';
+				var cssTextNode  = document.createTextNode(css);
+				var styleElem    = document.createElement('style');
+
+				styleElem.appendChild(cssTextNode)
+				styleElem.id = 'changeStyle';
+
+				if(getStyleElem){
+					getStyleElem.parentNode.removeChild(getStyleElem);
+					document.body.appendChild(styleElem);
+				}else{
+					document.body.appendChild(styleElem);
+				}
+
+				document.body.insertBefore(dom,first);
+
+				pie.className = 'pie start';
+
+				setTimeout(function() {
+					pie.className = 'pie stop';
+					ms >= (time * 1000) - 4 ? pie.className = 'pie all' : '';
+				}, ms);
+
+				console.log('显示',numElem.value,'%,', '用时:', ms,'毫秒');
+			}
+		});
+	</script>
+</body>
+</html>
